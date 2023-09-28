@@ -1,11 +1,20 @@
-FROM python:3.11-slim-bookworm
+FROM node:18.17-bookworm
 
-WORKDIR /app
+WORKDIR /home/app
 
 COPY . .
 
-RUN pip install -r requirements.txt
+RUN npm i -g pnpm@latest && \
+    pnpm install && \
+    pnpm run build && \
+    rm -rf node_modules && \
+    pnpm install --prod && \
+    pnpm store prune && \
+    npm uninstall --global pnpm
 
-ENV CONFIG_FILE_PATH="/app/config.toml"
+ENV NODE_ENV=production
+ENV PORT=3000
 
-CMD ["python3", "adelite/adelite.py", "-c", "$CONFIG_FILE_PATH"]
+EXPOSE ${PORT}
+
+CMD [ "node", "dist/index.js" ]
